@@ -1,0 +1,68 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+' Container Lift Control Node which can be used to control the lift
+' Container Task Center Node which is the main Container that will be split into several Component
+' Container Task Center Node create access_control_task and request Lift Control Node to open the door
+!define osaPuml https://raw.githubusercontent.com/Crashedmind/PlantUML-opensecurityarchitecture2-icons/master
+!include osaPuml/Common.puml
+!include osaPuml/User/all.puml
+!include osaPuml/Hardware/all.puml
+!include osaPuml/Misc/all.puml
+!include osaPuml/Server/all.puml
+!include osaPuml/Site/all.puml
+' Container Task Center Node
+
+osa_cloud(cloud, "Cloud", "A cloud that is used get zones.")
+
+Container_Boundary(Task_center_node, "Task Center Node") {
+    ' This Container Have several component
+    ' First is the Task_center which is responsible for creating and forcing access_control_task
+    ' osa_destop is task center node
+    Component(CreateTask, "Create Task", "C++", "Allow other task to create an access_control_task")
+
+    Component(AccessControlTask, "Access Control Task", "C++", "a task to access the door")
+    'osa_awareness is the access_control task
+    Component(getTargetPoint, "Get Target Point", "C++", "a function to get the target point from the cloud")
+
+
+    'osa_ics_drive is the navigation task
+    Component(Navigation, "Navigation func", "C++", "a function to navigate to the access_point")
+
+    Component(Request, "Access Control API", "C++", "a function to send request to Lift Control Node to open the door")
+    
+    Rel(CreateTask,  AccessControlTask , "create")
+    Rel(Navigation, getTargetPoint, "use")
+    Rel(AccessControlTask, Request, "use")
+    Rel(AccessControlTask, Navigation, "use")
+    Rel(AccessControlTask, getTargetPoint, "use")
+    Rel(getTargetPoint, cloud, "use")
+    ' access_control_task have three component
+    ' first is to get zones from the Cloud
+    ' second is to create navigation task to the access_point
+    ' third is to send request to Lift Control Node to open the door
+    ' access the door use navigation task from one point to another
+    ' finally it will send request to Lift Control Node to close the door
+}
+
+
+' Container Lift Control Node
+
+Container_Boundary(lift_control_node, "Lift Control Node") {
+    ' Lift Control node handler get request from task_center_node 
+    ' osa_server is the Lift Control Node 
+    Component(Handler, "Handler", "C++", "a function to handle the request from Task Center Node")
+    Component(OpenDoor, "Open Door", "C++", "a function to open the door")
+    Component(CloseDoor, "Close Door", "C++", "a function to close the door")
+
+    'osa_ics_drive is the door control api
+    Component(DoorControlAPI, "Door Control API", "C++", "a function to control the door")
+
+    Rel(Handler, OpenDoor, "Create")
+    Rel(Handler, CloseDoor, "Create")
+    Rel(OpenDoor, DoorControlAPI, "Use")
+    Rel(CloseDoor, DoorControlAPI, "Use")
+    ' Do the open door task
+    ' Do the close door task
+}
+
+Rel(Request, Handler, "call", "ROS2 Service")

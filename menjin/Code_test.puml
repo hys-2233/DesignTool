@@ -1,0 +1,23 @@
+@startuml
+class User {
+    +String name
+    +String email
+    +void login()
+    +void logout()
+}
+
+class Product {
+    +String name
+    +float price
+    +void displayDetails()
+}
+
+class Order {
+    +int orderId
+    +Date orderDate
+    +void placeOrder()
+}
+
+User "1" *-- "many" Order : places
+Order "1" *-- "many" Product : contains
+@enduml

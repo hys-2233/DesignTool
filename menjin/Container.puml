@@ -1,0 +1,66 @@
+@startuml
+!define osaPuml https://raw.githubusercontent.com/Crashedmind/PlantUML-opensecurityarchitecture2-icons/master
+!include osaPuml/Common.puml
+!include osaPuml/User/all.puml
+!include osaPuml/Hardware/all.puml
+!include osaPuml/Misc/all.puml
+!include osaPuml/Server/all.puml
+!include osaPuml/Site/all.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+!include DEVICONS/msql_server.puml
+!include FONTAWESOME/server.puml
+
+
+
+'osa_id_card(robot_id, "Robot ID Card", "An ID card that is used to identify the robot.")
+
+
+' mysql_server and api_server are bounded as a container
+Container_Boundary(c1, "Cloud") {
+    Container(cloud_api_server, "Cloud API Server", "Go", "A cloud that is used to communicate with the robot.", "osa_cloud")
+    ContainerDb(cloud_db_server,"Database" , "SQL Database", "A database that is used to store the robot's information.", "mysql_server")
+}
+
+
+'door lock interface can be controlled by Lift Control Node
+osa_padlock(door_lock, "Door Lock", "A door lock that is controlled by the liftcontrol.")
+' robot contain some component
+' task center node send request with target point to cloud
+' cloud give back zones containning map info to task center node
+' task center node send request to lift control node
+' lift control node accept the request and control the door lock
+
+
+' task_center_node interact lift_control node wich ros2_service
+' task_center_node get zones from cloud_api_server
+Container_Boundary(c2, "Robot Control") {
+    Container(task_center_node, "Task Center Node", "C++","A node that is used to create a task that switch map.", "osa_desktop")
+    Container(lift_control_node, "Lift Control Node", "C++","A node that is used to control the lift.", "osa_server_identity")
+    Container_Ext(ros2_service, "ROS Service", "C++", "Ros2 service.", "osa_device_wireless_router")
+}
+'Robot
+Person(Robot, "Robot", "A robot that want to access the door lock.")
+
+Rel_R(Robot, door_lock, "access")
+
+Rel_U(Robot, task_center_node, "use")
+' task center ask cloud for zones containning map info
+Rel_U(task_center_node, cloud_api_server, "Get zones")
+
+Rel_R(task_center_node, ros2_service, "call")
+
+Rel_R(ros2_service, lift_control_node, "interact")
+
+Rel_R(lift_control_node, door_lock, "control")
+
+Rel_L(cloud_api_server, cloud_db_server, "Interact")
+
+' cloud give back zones containning map info to task center
+' task center send request to lift control node
+' lift control node accept the request and control the door lock
+

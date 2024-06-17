@@ -1,0 +1,24 @@
+@startuml
+!define RECTANGLE class
+!define AGENT class
+
+RECTANGLE "Step 1: Pull the first incomplete task" as step1
+AGENT "Execution Agent" as executionAgent
+RECTANGLE "Step 2: Enrich result and store in Vector DB" as step2
+AGENT "Context Agent" as contextAgent
+AGENT "Task Creation Agent" as taskCreationAgent
+AGENT "Prioritization Agent" as prioritizationAgent
+RECTANGLE "Step 3: Create new tasks and reprioritize task list" as step3
+
+step1 -down-> executionAgent : Execute task
+executionAgent -down-> step2 : Return result
+step2 -down-> contextAgent : Retrieve context
+contextAgent -up-> step2 : Return context
+step2 -down-> step3 : Store result in Vector DB
+step3 -down-> taskCreationAgent : Create new tasks
+taskCreationAgent -up-> step3 : Return new tasks
+step3 -down-> prioritizationAgent : Reprioritize task list
+prioritizationAgent -up-> step3 : Return prioritized tasks
+step3 -up-> step1 : Loop
+
+@enduml

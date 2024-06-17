@@ -1,0 +1,58 @@
+@startuml
+|composite_task|
+start
+' judge whether need to switch map
+if (need_switch_map?) then (yes)
+    |#pink|lift control node|
+    if (need_access_guard?) then (yes)
+        |#green|task_center|
+        :creat access_guard_task;
+        :do access_guard_task;
+        |#yellow|access_guard_task|
+        :get target point from map;
+        if (need_water_uptake?) then (yes)
+            :water_uptake_task func;
+        else (no)
+        endif
+        :navigate to target point;
+        :do switch map;
+        |lift control node|
+        :get guard access;
+        |access_guard_task|
+        :navigate to access point end;
+        while (in progress)
+            |lift control node|
+            :continue open door;
+        endwhile 
+        :close door;
+        |access_guard_task|
+        :finish;
+
+    else (no)
+        |#Grey|lift control task|
+        :create lift_control_task;
+        :......;
+        stop
+    |access_guard_task|
+    endif
+    
+    stop
+|composite_task|
+endif
+' yes -> judge which type switch map task we need
+' if need access guard task -> create access_guard_task
+' if need lift control task -> create lift_control_task
+' do access_guard_task
+' get target point from map
+' judge whether need to water_uptake
+' yes -> water_uptake func
+' no -> continue
+' navigate to target point
+' do switch map
+' get guard access 
+' navigate to access point end
+' if in progress -> continue to open door
+' if end -> close door
+' no -> end
+end
+@enduml

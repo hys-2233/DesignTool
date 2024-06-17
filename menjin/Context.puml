@@ -1,0 +1,43 @@
+@startuml
+!define osaPuml https://raw.githubusercontent.com/Crashedmind/PlantUML-opensecurityarchitecture2-icons/master
+!include osaPuml/Common.puml
+!include osaPuml/User/all.puml
+!include osaPuml/Hardware/all.puml
+!include osaPuml/Misc/all.puml
+!include osaPuml/Server/all.puml
+!include osaPuml/Site/all.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+
+
+osa_padlock(door_lock, "Door Lock", "A door lock that is controlled by the door_lock system.")
+
+osa_cloud(cloud, "Cloud", "A cloud that is used to communicate with the robot.")
+
+System_Boundary(c0, "Robot Control") {
+    osa_desktop(task_center_node, "Task Center", "A node that is used to create a task that switch map.")
+    osa_server_identity(lift_control_node, "Lift Control", "A node that is used to control the lift.")
+}
+'Robot
+Person(Robot, "Robot", "A robot that want to access the door lock.")
+
+'Task_center_node ask cloud for zones containning map info
+Rel_U(task_center_node, cloud, "get zones")
+
+' cloud give back zones containning map info to task center
+' task center send request to lift control node
+' lift control node accept the request and control the door lock
+
+' Robot ask for the door lock server to open the door
+Rel_U(task_center_node, lift_control_node, "request")
+' Door lock server control the door lock to open the door
+Rel_R(lift_control_node, door_lock, "control")
+' Robot enter the door
+Rel_R(Robot, door_lock, "access")
+' Robot leave the door
+
+' Robot ask for the door lock server to close the door
+Rel_U(Robot, task_center_node, "Use")
+
+Lay_U(task_center_node, cloud)
+Lay_R(door_lock, task_center_node)
